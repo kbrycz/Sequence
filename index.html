@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <!-- Google Analytics -->
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="style/style.css">
+        <title>Sequence online</title>
+    </head>
+    <body>
+        <div id="app">
+            <div v-if="state === 0">
+                <div class="container">
+                    <h1>Sequence Online</h1>
+                    <div class="login-view">
+                        <div class="buttonBlock">
+                            <button class="btn btn-primary" v-on:click="createRoom">Create Room</button>
+                        </div>
+                        <div class="buttonBlock">
+                            <button class="btn btn-primary" v-on:click="state=2">Join Room</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div v-if="state === 1">
+                <div class="container">
+                    <h1>Sequence Online</h1>
+                    <div class="login-view">
+                        <div class="buttonBlock">
+                            <h3>Here is your invite code:</h3>
+                            <h5>{{roomName}}</h5>
+                        </div>
+                        <div class="buttonBlock">
+                            <button class="btn btn-primary" v-on:click="state = 3">Continue</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="state === 2">
+                <div class="container">
+                    <h1>Sequence Online</h1>
+                    <div class="login-view">
+                        <div class="buttonBlock">
+                            <h3>Enter a room key to join:</h3>
+                        </div>
+                        <div class="buttonBlock">
+                            <form @submit.prevent="joinRoom" class="joinDiv">
+                                <input class="joinText" type ="text" onkeyup="this.value = this.value.toUpperCase();" placeholder="Room key..." v-model:value="roomName" />
+                                <input class="btn btn-primary" type="submit" value = "Join" />
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="state === 3">
+                <div class="container">
+                    <h1>Sequence Online</h1>
+                    <div class="login-view">
+                        <div class="buttonBlock">
+                            <h3>Please Enter a Username:</h3>
+                        </div>
+                        <div class="buttonBlock">
+                            <form @submit.prevent="setUsername" class="joinDiv">
+                                <input class="joinText" type ="text" placeholder="Username..." v-model:value="username" required
+                                minlength="2" maxlength="12" />
+                                <input class="btn btn-primary" type="submit" value = "join" />
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="state === 4">
+                <div class="container">
+                    <h1>Sequence Online</h1>
+                    <div v-for="user in users">
+                        <div class="playerRowStart row" v-if="user.team === 0">
+                            <div class="playerRow">
+                                <div class="col-6">
+                                    <h4>{{user.name}}</h4>
+                                </div>
+                                <div class="col-6" v-if="user.socketid == player.socketid">
+                                    <button class="btn btn-dark" v-on:click="changeTeam">Change Team</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="playerRowStart row blue" v-if="user.team === 1">
+                            <div class="playerRow">
+                                <div class="col-6">
+                                    <h4>{{user.name}}</h4>
+                                </div>
+                                <div class="col-6" v-if="user.socketid == player.socketid">
+                                    <button class="btn btn-dark" v-on:click="changeTeam">Change Team</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="playerRowStart row green" v-if="user.team === 2">
+                            <div class="playerRow">
+                                <div class="col-6">
+                                    <h4>{{user.name}}</h4>
+                                </div>
+                                <div class="col-6" v-if="user.socketid == player.socketid">
+                                    <button class="btn btn-dark" v-on:click="changeTeam">Change Team</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="playerRowStart row red" v-if="user.team === 3">
+                            <div class="playerRow">
+                                <div class="col-6">
+                                    <h4>{{user.name}}</h4>
+                                </div>
+                                <div class="col-6" v-if="user.socketid == player.socketid">
+                                    <button class="btn btn-dark" v-on:click="changeTeam">Change Team</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="isHost" class="container">
+                        <div class="startGame">
+                            <button class="btn btn-primary" v-on:click="startGame">Start Game</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!----------------------------------------------GAME SCREEN---------------------------------------------------------->
+            
+            <div v-if="state === 5">
+                <table>
+                    <tr>
+                        <td>
+                            <img src="cards/gray_back.png">
+                        </td>
+
+                        <td v-on:click="playCard(1)" class="highlighted" v-if="board[1] === 0 && pickedCard === '10S' && !twoEyed">
+                            <img src="cards/10S.png">
+                        </td>
+                        <td v-if="board[1] !== 0 && pickedCard !== '10S' && !twoEyed">
+                            <img src="cards/10S.png">
+                            <img class="chip" v-bind:src="chips[board[1]-1]">
+                        </td>
+                        <td v-if="board[1] === 0 && pickedCard !== '10S' && !twoEyed">
+                            <img src="cards/10S.png">
+                        </td>
+                        <td v-if="board[1] !== 0 && pickedCard === '10S' && !twoEyed">
+                            <img src="cards/10S.png">
+                            <img class="chip" v-bind:src="chips[board[1]-1]">
+                        </td>
+                        <td v-on:click="playCard(1)" class="highlighted" v-if="board[1] === 0 && twoEyed">
+                            <img src="cards/10S.png">
+                        </td>
+                        <td v-on:click="removeCard(1)" class="highlighted" v-if="board[1] !== 0 && oneEyed && player.team !== board[1]">
+                            <img src="cards/10S.png">
+                            <img class="chip" v-bind:src="chips[board[1]-1]">
+                        </td>
+                        <td v-if="board[1] !== 0 && oneEyed && player.team === board[1]">
+                            <img src="cards/10S.png">
+                            <img class="chip" v-bind:src="chips[board[1]-1]">
+                        </td>
+
+
+                        <td v-on:click="playCard(2)" class="highlighted" v-if="board[2] === 0 && pickedCard === 'QS'">
+                            <img src="cards/QS.png">
+                        </td>
+                        <td v-if="board[2] !== 0 && pickedCard !== 'QS'">
+                            <img src="cards/QS.png">
+                            <img class="chip" v-bind:src="chips[board[2]-1]">
+                        </td>
+                        <td v-if="board[2] === 0 && pickedCard !== 'QS'">
+                            <img src="cards/QS.png">
+                        </td>
+
+                        <td v-on:click="playCard(3)" class="highlighted" v-if="board[3] === 0 && pickedCard === 'KS'">
+                            <img src="cards/KS.png">
+                        </td>
+                        <td v-if="board[3] !== 0 && pickedCard !== 'KS'">
+                            <img src="cards/KS.png">
+                            <img class="chip" v-bind:src="chips[board[3]-1]">
+                        </td>
+                        <td v-if="board[3] === 0 && pickedCard !== 'KS'">
+                            <img src="cards/KS.png">
+                        </td>
+
+                        <td v-on:click="playCard(4)" class="highlighted" v-if="board[4] === 0 && pickedCard === 'AS'">
+                            <img src="cards/AS.png">
+                        </td>
+                        <td v-if="board[4] !== 0 && pickedCard !== 'AS'">
+                            <img src="cards/AS.png">
+                            <img class="chip" v-bind:src="chips[board[4]-1]">
+                        </td>
+                        <td v-if="board[4] === 0 && pickedCard !== 'AS'">
+                            <img src="cards/AS.png">
+                        </td>
+
+                        <td v-on:click="playCard(5)" class="highlighted" v-if="board[5] === 0 && pickedCard === '2D'">
+                            <img src="cards/2D.png">
+                        </td>
+                        <td v-if="board[5] !== 0 && pickedCard !== '2D'">
+                            <img src="cards/2D.png">
+                            <img class="chip" v-bind:src="chips[board[5]-1]">
+                        </td>
+                        <td v-if="board[5] === 0 && pickedCard !== '2D'">
+                            <img src="cards/2D.png">
+                        </td>
+
+                        <td v-on:click="playCard(6)" class="highlighted" v-if="board[6] === 0 && pickedCard === '3D'">
+                            <img src="cards/3D.png">
+                        </td>
+                        <td v-if="board[6] !== 0 && pickedCard !== '3D'">
+                            <img src="cards/3D.png">
+                            <img class="chip" v-bind:src="chips[board[6]-1]">
+                        </td>
+                        <td v-if="board[6] === 0 && pickedCard !== '3D'">
+                            <img src="cards/3D.png">
+                        </td>
+
+                        <td v-on:click="playCard(7)" class="highlighted" v-if="board[7] === 0 && pickedCard === '4D'">
+                            <img src="cards/4D.png">
+                        </td>
+                        <td v-if="board[7] !== 0 && pickedCard !== '4D'">
+                            <img src="cards/4D.png">
+                            <img class="chip" v-bind:src="chips[board[7]-1]">
+                        </td>
+                        <td v-if="board[7] === 0 && pickedCard !== '4D'">
+                            <img src="cards/4D.png">
+                        </td>
+
+                        <td v-on:click="playCard(8)" class="highlighted" v-if="board[8] === 0 && pickedCard === '5D'">
+                            <img src="cards/5D.png">
+                        </td>
+                        <td v-if="board[8] !== 0 && pickedCard !== '5D'">
+                            <img src="cards/5D.png">
+                            <img class="chip" v-bind:src="chips[board[8]-1]">
+                        </td>
+                        <td v-if="board[8] === 0 && pickedCard !== '5D'">
+                            <img src="cards/5D.png">
+                        </td>
+                        <td>
+                            <img src="cards/gray_back.png">
+                        </td>
+                    </tr>
+
+                    <!-----------------------NEW ROW-2-------------------> 
+                    <tr>
+                        <td v-on:click="playCard(10)" class="highlighted" v-if="board[10] === 0 && pickedCard === '9D'">
+                            <img src="cards/9D.png">
+                        </td>
+                        <td v-if="board[10] !== 0 && pickedCard !== '9D'">
+                            <img src="cards/9D.png">
+                            <img class="chip" v-bind:src="chips[board[10]-1]">
+                        </td>
+                        <td v-if="board[10] === 0 && pickedCard !== '9D'">
+                            <img src="cards/9D.png">
+                        </td>
+
+                        <td v-on:click="playCard(11)" class="highlighted" v-if="board[11] === 0 && pickedCard === '10H'">
+                            <img src="cards/10H.png">
+                        </td>
+                        <td v-if="board[11] !== 0 && pickedCard !== '10H'">
+                            <img src="cards/10H.png">
+                            <img class="chip" v-bind:src="chips[board[11]-1]">
+                        </td>
+                        <td v-if="board[11] === 0 && pickedCard !== '10H'">
+                            <img src="cards/10H.png">
+                        </td>
+
+                        <td v-on:click="playCard(12)" class="highlighted" v-if="board[12] === 0 && pickedCard === '9H'">
+                            <img src="cards/9H.png">
+                        </td>
+                        <td v-if="board[12] !== 0 && pickedCard !== '9H'">
+                            <img src="cards/9H.png">
+                            <img class="chip" v-bind:src="chips[board[12]-1]">
+                        </td>
+                        <td v-if="board[12] === 0 && pickedCard !== '9H'">
+                            <img src="cards/9H.png">
+                        </td>
+
+                        <td v-on:click="playCard(13)" class="highlighted" v-if="board[13] === 0 && pickedCard === '8H'">
+                            <img src="cards/8H.png">
+                        </td>
+                        <td v-if="board[13] !== 0 && pickedCard !== '8H'">
+                            <img src="cards/8H.png">
+                            <img class="chip" v-bind:src="chips[board[13]-1]">
+                        </td>
+                        <td v-if="board[13] === 0 && pickedCard !== '8H'">
+                            <img src="cards/8H.png">
+                        </td>
+
+                        <td v-on:click="playCard(14)" class="highlighted" v-if="board[14] === 0 && pickedCard === '7H'">
+                            <img src="cards/7H.png">
+                        </td>
+                        <td v-if="board[14] !== 0 && pickedCard !== '7H'">
+                            <img src="cards/7H.png">
+                            <img class="chip" v-bind:src="chips[board[14]-1]">
+                        </td>
+                        <td v-if="board[14] === 0 && pickedCard !== '7H'">
+                            <img src="cards/7H.png">
+                        </td>
+
+                        <td v-on:click="playCard(15)" class="highlighted" v-if="board[15] === 0 && pickedCard === '6H'">
+                            <img src="cards/6H.png">
+                        </td>
+                        <td v-if="board[15] !== 0 && pickedCard !== '6H'">
+                            <img src="cards/6H.png">
+                            <img class="chip" v-bind:src="chips[board[15]-1]">
+                        </td>
+                        <td v-if="board[15] === 0 && pickedCard !== '6H'">
+                            <img src="cards/6H.png">
+                        </td>
+
+                        <td v-on:click="playCard(16)" class="highlighted" v-if="board[16] === 0 && pickedCard === '5H'">
+                            <img src="cards/5H.png">
+                        </td>
+                        <td v-if="board[16] !== 0 && pickedCard !== '5H'">
+                            <img src="cards/5H.png">
+                            <img class="chip" v-bind:src="chips[board[16]-1]">
+                        </td>
+                        <td v-if="board[16] === 0 && pickedCard !== '5H'">
+                            <img src="cards/5H.png">
+                        </td>
+
+                        <td v-on:click="playCard(17)" class="highlighted" v-if="board[17] === 0 && pickedCard === '4H'">
+                            <img src="cards/4H.png">
+                        </td>
+                        <td v-if="board[17] !== 0 && pickedCard !== '4H'">
+                            <img src="cards/4H.png">
+                            <img class="chip" v-bind:src="chips[board[17]-1]">
+                        </td>
+                        <td v-if="board[17] === 0 && pickedCard !== '4H'">
+                            <img src="cards/4H.png">
+                        </td>
+
+                        <td v-on:click="playCard(18)" class="highlighted" v-if="board[18] === 0 && pickedCard === '3H'">
+                            <img src="cards/3H.png">
+                        </td>
+                        <td v-if="board[18] !== 0 && pickedCard !== '3H'">
+                            <img src="cards/3H.png">
+                            <img class="chip" v-bind:src="chips[board[18]-1]">
+                        </td>
+                        <td v-if="board[18] === 0 && pickedCard !== '3H'">
+                            <img src="cards/3H.png">
+                        </td>
+
+                        <td v-on:click="playCard(19)" class="highlighted" v-if="board[19] === 0 && pickedCard === '6D'">
+                            <img src="cards/6D.png">
+                        </td>
+                        <td v-if="board[19] !== 0 && pickedCard !== '6D'">
+                            <img src="cards/6D.png">
+                            <img class="chip" v-bind:src="chips[board[19]-1]">
+                        </td>
+                        <td v-if="board[19] === 0 && pickedCard !== '6D'">
+                            <img src="cards/6D.png">
+                        </td>
+                    </tr>
+                    <!-----------------------NEW ROW-3------------------->
+                    <tr>
+
+                        <td v-on:click="playCard(20)" class="highlighted" v-if="board[20] === 0 && pickedCard === '8S'">
+                            <img src="cards/8S.png">
+                        </td>
+                        <td v-if="board[20] !== 0 && pickedCard !== '8S'">
+                            <img src="cards/8S.png">
+                            <img class="chip" v-bind:src="chips[board[20]-1]">
+                        </td>
+                        <td v-if="board[20] === 0 && pickedCard !== '8S'">
+                            <img src="cards/8S.png">
+                        </td>
+
+                        <td v-on:click="playCard(21)" class="highlighted" v-if="board[21] === 0 && pickedCard === 'QH'">
+                            <img src="cards/QH.png">
+                        </td>
+                        <td v-if="board[21] !== 0 && pickedCard !== 'QH'">
+                            <img src="cards/QH.png">
+                            <img class="chip" v-bind:src="chips[board[21]-1]">
+                        </td>
+                        <td v-if="board[21] === 0 && pickedCard !== 'QH'">
+                            <img src="cards/QH.png">
+                        </td>
+
+                        <td v-on:click="playCard(22)" class="highlighted" v-if="board[22] === 0 && pickedCard === '7D'">
+                            <img src="cards/7D.png">
+                        </td>
+                        <td v-if="board[22] !== 0 && pickedCard !== '7D'">
+                            <img src="cards/7D.png">
+                            <img class="chip" v-bind:src="chips[board[22]-1]">
+                        </td>
+                        <td v-if="board[22] === 0 && pickedCard !== '7D'">
+                            <img src="cards/7D.png">
+                        </td>
+
+                        <td v-on:click="playCard(23)" class="highlighted" v-if="board[23] === 0 && pickedCard === '8D'">
+                            <img src="cards/8D.png">
+                        </td>
+                        <td v-if="board[23] !== 0 && pickedCard !== '8D'">
+                            <img src="cards/8D.png">
+                            <img class="chip" v-bind:src="chips[board[23]-1]">
+                        </td>
+                        <td v-if="board[23] === 0 && pickedCard !== '8D'">
+                            <img src="cards/8D.png">
+                        </td>
+
+                        <td v-on:click="playCard(24)" class="highlighted" v-if="board[24] === 0 && pickedCard === '9D'">
+                            <img src="cards/9D.png">
+                        </td>
+                        <td v-if="board[24] !== 0 && pickedCard !== '9D'">
+                            <img src="cards/9D.png">
+                            <img class="chip" v-bind:src="chips[board[24]-1]">
+                        </td>
+                        <td v-if="board[24] === 0 && pickedCard !== '9D'">
+                            <img src="cards/9D.png">
+                        </td>
+
+                        <td v-on:click="playCard(25)" class="highlighted" v-if="board[25] === 0 && pickedCard === '10D'">
+                            <img src="cards/10D.png">
+                        </td>
+                        <td v-if="board[25] !== 0 && pickedCard !== '10D'">
+                            <img src="cards/10D.png">
+                            <img class="chip" v-bind:src="chips[board[25]-1]">
+                        </td>
+                        <td v-if="board[25] === 0 && pickedCard !== '10D'">
+                            <img src="cards/10D.png">
+                        </td>
+
+                        <td v-on:click="playCard(26)" class="highlighted" v-if="board[26] === 0 && pickedCard === 'QD'">
+                            <img src="cards/QD.png">
+                        </td>
+                        <td v-if="board[26] !== 0 && pickedCard !== 'QD'">
+                            <img src="cards/QD.png">
+                            <img class="chip" v-bind:src="chips[board[26]-1]">
+                        </td>
+                        <td v-if="board[26] === 0 && pickedCard !== 'QD'">
+                            <img src="cards/QD.png">
+                        </td>
+
+                        <td v-on:click="playCard(27)" class="highlighted" v-if="board[27] === 0 && pickedCard === 'KD'">
+                            <img src="cards/KD.png">
+                        </td>
+                        <td v-if="board[27] !== 0 && pickedCard !== 'KD'">
+                            <img src="cards/KD.png">
+                            <img class="chip" v-bind:src="chips[board[27]-1]">
+                        </td>
+                        <td v-if="board[27] === 0 && pickedCard !== 'KD'">
+                            <img src="cards/KD.png">
+                        </td>
+
+                        <td v-on:click="playCard(28)" class="highlighted" v-if="board[28] === 0 && pickedCard === '2H'">
+                            <img src="cards/2H.png">
+                        </td>
+                        <td v-if="board[28] !== 0 && pickedCard !== '2H'">
+                            <img src="cards/2H.png">
+                            <img class="chip" v-bind:src="chips[board[28]-1]">
+                        </td>
+                        <td v-if="board[28] === 0 && pickedCard !== '2H'">
+                            <img src="cards/2H.png">
+                        </td>
+
+                        <td v-on:click="playCard(29)" class="highlighted" v-if="board[29] === 0 && pickedCard === '7D'">
+                            <img src="cards/7D.png">
+                        </td>
+                        <td v-if="board[29] !== 0 && pickedCard !== '7D'">
+                            <img src="cards/7D.png">
+                            <img class="chip" v-bind:src="chips[board[29]-1]">
+                        </td>
+                        <td v-if="board[29] === 0 && pickedCard !== '7D'">
+                            <img src="cards/7D.png">
+                        </td>
+                    </tr>
+                    <!-----------------------NEW ROW-4------------------->
+                    <tr>
+                        <td v-on:click="playCard(30)" class="highlighted" v-if="board[30] === 0 && pickedCard === '7S'">
+                            <img src="cards/7S.png">
+                        </td>
+                        <td v-if="board[30] !== 0 && pickedCard !== '7S'">
+                            <img src="cards/7S.png">
+                            <img class="chip" v-bind:src="chips[board[30]-1]">
+                        </td>
+                        <td v-if="board[30] === 0 && pickedCard !== '7S'">
+                            <img src="cards/7S.png">
+                        </td>
+
+                        <td v-on:click="playCard(31)" class="highlighted" v-if="board[31] === 0 && pickedCard === 'KH'">
+                            <img src="cards/KH.png">
+                        </td>
+                        <td v-if="board[31] !== 0 && pickedCard !== 'KH'">
+                            <img src="cards/KH.png">
+                            <img class="chip" v-bind:src="chips[board[31]-1]">
+                        </td>
+                        <td v-if="board[31] === 0 && pickedCard !== 'KH'">
+                            <img src="cards/KH.png">
+                        </td>
+
+                        <td v-on:click="playCard(32)" class="highlighted" v-if="board[32] === 0 && pickedCard === '6D'">
+                            <img src="cards/6D.png">
+                        </td>
+                        <td v-if="board[32] !== 0 && pickedCard !== '6D'">
+                            <img src="cards/6D.png">
+                            <img class="chip" v-bind:src="chips[board[32]-1]">
+                        </td>
+                        <td v-if="board[32] === 0 && pickedCard !== '6D'">
+                            <img src="cards/6D.png">
+                        </td>
+
+                        <td v-on:click="playCard(33)" class="highlighted" v-if="board[33] === 0 && pickedCard === '2C'">
+                            <img src="cards/2C.png">
+                        </td>
+                        <td v-if="board[33] !== 0 && pickedCard !== '2C'">
+                            <img src="cards/2C.png">
+                            <img class="chip" v-bind:src="chips[board[33]-1]">
+                        </td>
+                        <td v-if="board[33] === 0 && pickedCard !== '2C'">
+                            <img src="cards/2C.png">
+                        </td>
+
+                        <td v-on:click="playCard(34)" class="highlighted" v-if="board[34] === 0 && pickedCard === 'AH'">
+                            <img src="cards/AH.png">
+                        </td>
+                        <td v-if="board[34] !== 0 && pickedCard !== 'AH'">
+                            <img src="cards/AH.png">
+                            <img class="chip" v-bind:src="chips[board[34]-1]">
+                        </td>
+                        <td v-if="board[34] === 0 && pickedCard !== 'AH'">
+                            <img src="cards/AH.png">
+                        </td>
+
+                        <td v-on:click="playCard(35)" class="highlighted" v-if="board[35] === 0 && pickedCard === 'KH'">
+                            <img src="cards/KH.png">
+                        </td>
+                        <td v-if="board[35] !== 0 && pickedCard !== 'KH'">
+                            <img src="cards/KH.png">
+                            <img class="chip" v-bind:src="chips[board[35]-1]">
+                        </td>
+                        <td v-if="board[35] === 0 && pickedCard !== 'KH'">
+                            <img src="cards/KH.png">
+                        </td>
+
+                        <td v-on:click="playCard(36)" class="highlighted" v-if="board[36] === 0 && pickedCard === 'QH'">
+                            <img src="cards/QH.png">
+                        </td>
+                        <td v-if="board[36] !== 0 && pickedCard !== 'QH'">
+                            <img src="cards/QH.png">
+                            <img class="chip" v-bind:src="chips[board[36]-1]">
+                        </td>
+                        <td v-if="board[36] === 0 && pickedCard !== 'QH'">
+                            <img src="cards/QH.png">
+                        </td>
+
+                        <td v-on:click="playCard(37)" class="highlighted" v-if="board[37] === 0 && pickedCard === 'AD'">
+                            <img src="cards/AD.png">
+                        </td>
+                        <td v-if="board[37] !== 0 && pickedCard !== 'AD'">
+                            <img src="cards/AD.png">
+                            <img class="chip" v-bind:src="chips[board[37]-1]">
+                        </td>
+                        <td v-if="board[37] === 0 && pickedCard !== 'AD'">
+                            <img src="cards/AD.png">
+                        </td>
+
+                        <td v-on:click="playCard(38)" class="highlighted" v-if="board[38] === 0 && pickedCard === '2S'">
+                            <img src="cards/2S.png">
+                        </td>
+                        <td v-if="board[38] !== 0 && pickedCard !== '2S'">
+                            <img src="cards/2S.png">
+                            <img class="chip" v-bind:src="chips[board[38]-1]">
+                        </td>
+                        <td v-if="board[38] === 0 && pickedCard !== '2S'">
+                            <img src="cards/2S.png">
+                        </td>
+
+                        <td v-on:click="playCard(39)" class="highlighted" v-if="board[39] === 0 && pickedCard === '8D'">
+                            <img src="cards/8D.png">
+                        </td>
+                        <td v-if="board[39] !== 0 && pickedCard !== '8D'">
+                            <img src="cards/8D.png">
+                            <img class="chip" v-bind:src="chips[board[39]-1]">
+                        </td>
+                        <td v-if="board[39] === 0 && pickedCard !== '8D'">
+                            <img src="cards/8D.png">
+                        </td>
+                    </tr>
+                    <!-----------------------NEW ROW-5------------------->
+                    <tr>
+                        <td v-on:click="playCard(40)" class="highlighted" v-if="board[40] === 0 && pickedCard === '6S'">
+                            <img src="cards/6S.png">
+                        </td>
+                        <td v-if="board[40] !== 0 && pickedCard !== '6S'">
+                            <img src="cards/6S.png">
+                            <img class="chip" v-bind:src="chips[board[40]-1]">
+                        </td>
+                        <td v-if="board[40] === 0 && pickedCard !== '6S'">
+                            <img src="cards/6S.png">
+                        </td>
+
+                        <td v-on:click="playCard(41)" class="highlighted" v-if="board[41] === 0 && pickedCard === 'AH'">
+                            <img src="cards/AH.png">
+                        </td>
+                        <td v-if="board[41] !== 0 && pickedCard !== 'AH'">
+                            <img src="cards/AH.png">
+                            <img class="chip" v-bind:src="chips[board[41]-1]">
+                        </td>
+                        <td v-if="board[41] === 0 && pickedCard !== 'AH'">
+                            <img src="cards/AH.png">
+                        </td>
+
+                        <td v-on:click="playCard(42)" class="highlighted" v-if="board[42] === 0 && pickedCard === '5D'">
+                            <img src="cards/5D.png">
+                        </td>
+                        <td v-if="board[42] !== 0 && pickedCard !== '5D'">
+                            <img src="cards/5D.png">
+                            <img class="chip" v-bind:src="chips[board[42]-1]">
+                        </td>
+                        <td v-if="board[42] === 0 && pickedCard !== '5D'">
+                            <img src="cards/5D.png">
+                        </td>
+
+                        <td v-on:click="playCard(43)" class="highlighted" v-if="board[43] === 0 && pickedCard === '3C'">
+                            <img src="cards/3C.png">
+                        </td>
+                        <td v-if="board[43] !== 0 && pickedCard !== '3C'">
+                            <img src="cards/3C.png">
+                            <img class="chip" v-bind:src="chips[board[43]-1]">
+                        </td>
+                        <td v-if="board[43] === 0 && pickedCard !== '3C'">
+                            <img src="cards/3C.png">
+                        </td>
+
+                        <td v-on:click="playCard(44)" class="highlighted" v-if="board[44] === 0 && pickedCard === '4H'">
+                            <img src="cards/4H.png">
+                        </td>
+                        <td v-if="board[44] !== 0 && pickedCard !== '4H'">
+                            <img src="cards/4H.png">
+                            <img class="chip" v-bind:src="chips[board[44]-1]">
+                        </td>
+                        <td v-if="board[44] === 0 && pickedCard !== '4H'">
+                            <img src="cards/4H.png">
+                        </td>
+
+                        <td v-on:click="playCard(45)" class="highlighted" v-if="board[45] === 0 && pickedCard === '3H'">
+                            <img src="cards/3H.png">
+                        </td>
+                        <td v-if="board[45] !== 0 && pickedCard !== '3H'">
+                            <img src="cards/3H.png">
+                            <img class="chip" v-bind:src="chips[board[45]-1]">
+                        </td>
+                        <td v-if="board[45] === 0 && pickedCard !== '3H'">
+                            <img src="cards/3H.png">
+                        </td>
+
+                        <td v-on:click="playCard(46)" class="highlighted" v-if="board[46] === 0 && pickedCard === '10H'">
+                            <img src="cards/10H.png">
+                        </td>
+                        <td v-if="board[46] !== 0 && pickedCard !== '10H'">
+                            <img src="cards/10H.png">
+                            <img class="chip" v-bind:src="chips[board[46]-1]">
+                        </td>
+                        <td v-if="board[46] === 0 && pickedCard !== '10H'">
+                            <img src="cards/10H.png">
+                        </td>
+
+                        <td v-on:click="playCard(47)" class="highlighted" v-if="board[47] === 0 && pickedCard === 'AC'">
+                            <img src="cards/AC.png">
+                        </td>
+                        <td v-if="board[47] !== 0 && pickedCard !== 'AC'">
+                            <img src="cards/AC.png">
+                            <img class="chip" v-bind:src="chips[board[47]-1]">
+                        </td>
+                        <td v-if="board[47] === 0 && pickedCard !== 'AC'">
+                            <img src="cards/AC.png">
+                        </td>
+
+                        <td v-on:click="playCard(48)" class="highlighted" v-if="board[48] === 0 && pickedCard === '3S'">
+                            <img src="cards/3S.png">
+                        </td>
+                        <td v-if="board[48] !== 0 && pickedCard !== '3S'">
+                            <img src="cards/3S.png">
+                            <img class="chip" v-bind:src="chips[board[48]-1]">
+                        </td>
+                        <td v-if="board[48] === 0 && pickedCard !== '3S'">
+                            <img src="cards/3S.png">
+                        </td>
+
+                        <td v-on:click="playCard(49)" class="highlighted" v-if="board[49] === 0 && pickedCard === '9D'">
+                            <img src="cards/9D.png">
+                        </td>
+                        <td v-if="board[49] !== 0 && pickedCard !== '9D'">
+                            <img src="cards/9D.png">
+                            <img class="chip" v-bind:src="chips[board[49]-1]">
+                        </td>
+                        <td v-if="board[49] === 0 && pickedCard !== '9D'">
+                            <img src="cards/9D.png">
+                        </td>
+                    </tr>
+                    <!-----------------------NEW ROW--6------------------>
+                    <tr>
+
+                        <td v-on:click="playCard(50)" class="highlighted" v-if="board[50] === 0 && pickedCard === '5S'">
+                            <img src="cards/5S.png">
+                        </td>
+                        <td v-if="board[50] !== 0 && pickedCard !== '5S'">
+                            <img src="cards/5S.png">
+                            <img class="chip" v-bind:src="chips[board[50]-1]">
+                        </td>
+                        <td v-if="board[50] === 0 && pickedCard !== '5S'">
+                            <img src="cards/5S.png">
+                        </td>
+
+                        <td v-on:click="playCard(51)" class="highlighted" v-if="board[51] === 0 && pickedCard === '2C'">
+                            <img src="cards/2C.png">
+                        </td>
+                        <td v-if="board[51] !== 0 && pickedCard !== '2C'">
+                            <img src="cards/2C.png">
+                            <img class="chip" v-bind:src="chips[board[51]-1]">
+                        </td>
+                        <td v-if="board[51] === 0 && pickedCard !== '2C'">
+                            <img src="cards/2C.png">
+                        </td>
+
+                        <td v-on:click="playCard(52)" class="highlighted" v-if="board[52] === 0 && pickedCard === '4D'">
+                            <img src="cards/4D.png">
+                        </td>
+                        <td v-if="board[52] !== 0 && pickedCard !== '4D'">
+                            <img src="cards/4D.png">
+                            <img class="chip" v-bind:src="chips[board[52]-1]">
+                        </td>
+                        <td v-if="board[52] === 0 && pickedCard !== '4D'">
+                            <img src="cards/4D.png">
+                        </td>
+
+                        <td v-on:click="playCard(53)" class="highlighted" v-if="board[53] === 0 && pickedCard === '4C'">
+                            <img src="cards/4C.png">
+                        </td>
+                        <td v-if="board[53] !== 0 && pickedCard !== '4C'">
+                            <img src="cards/4C.png">
+                            <img class="chip" v-bind:src="chips[board[53]-1]">
+                        </td>
+                        <td v-if="board[53] === 0 && pickedCard !== '4C'">
+                            <img src="cards/4C.png">
+                        </td>
+
+                        <td v-on:click="playCard(54)" class="highlighted" v-if="board[54] === 0 && pickedCard === '5H'">
+                            <img src="cards/5H.png">
+                        </td>
+                        <td v-if="board[54] !== 0 && pickedCard !== '5H'">
+                            <img src="cards/5H.png">
+                            <img class="chip" v-bind:src="chips[board[54]-1]">
+                        </td>
+                        <td v-if="board[54] === 0 && pickedCard !== '5H'">
+                            <img src="cards/5H.png">
+                        </td>
+
+                        <td v-on:click="playCard(55)" class="highlighted" v-if="board[55] === 0 && pickedCard === '2H'">
+                            <img src="cards/2H.png">
+                        </td>
+                        <td v-if="board[55] !== 0 && pickedCard !== '2H'">
+                            <img src="cards/2H.png">
+                            <img class="chip" v-bind:src="chips[board[55]-1]">
+                        </td>
+                        <td v-if="board[55] === 0 && pickedCard !== '2H'">
+                            <img src="cards/2H.png">
+                        </td>
+
+                        <td v-on:click="playCard(56)" class="highlighted" v-if="board[56] === 0 && pickedCard === '9H'">
+                            <img src="cards/9H.png">
+                        </td>
+                        <td v-if="board[56] !== 0 && pickedCard !== '9H'">
+                            <img src="cards/9H.png">
+                            <img class="chip" v-bind:src="chips[board[56]-1]">
+                        </td>
+                        <td v-if="board[56] === 0 && pickedCard !== '9H'">
+                            <img src="cards/9H.png">
+                        </td>
+
+                        <td v-on:click="playCard(57)" class="highlighted" v-if="board[57] === 0 && pickedCard === 'KC'">
+                            <img src="cards/KC.png">
+                        </td>
+                        <td v-if="board[57] !== 0 && pickedCard !== 'KC'">
+                            <img src="cards/KC.png">
+                            <img class="chip" v-bind:src="chips[board[57]-1]">
+                        </td>
+                        <td v-if="board[57] === 0 && pickedCard !== 'KC'">
+                            <img src="cards/KC.png">
+                        </td>
+
+                        <td v-on:click="playCard(58)" class="highlighted" v-if="board[58] === 0 && pickedCard === '4S'">
+                            <img src="cards/4S.png">
+                        </td>
+                        <td v-if="board[58] !== 0 && pickedCard !== '4S'">
+                            <img src="cards/4S.png">
+                            <img class="chip" v-bind:src="chips[board[58]-1]">
+                        </td>
+                        <td v-if="board[58] === 0 && pickedCard !== '4S'">
+                            <img src="cards/4S.png">
+                        </td>
+
+                        <td v-on:click="playCard(59)" class="highlighted" v-if="board[59] === 0 && pickedCard === '10D'">
+                            <img src="cards/10D.png">
+                        </td>
+                        <td v-if="board[59] !== 0 && pickedCard !== '10D'">
+                            <img src="cards/10D.png">
+                            <img class="chip" v-bind:src="chips[board[59]-1]">
+                        </td>
+                        <td v-if="board[59] === 0 && pickedCard !== '10D'">
+                            <img src="cards/10D.png">
+                        </td>
+                    </tr>
+                    <!-----------------------NEW ROW-7------------------->
+                    <tr>
+
+                        <td v-on:click="playCard(60)" class="highlighted" v-if="board[60] === 0 && pickedCard === '4S'">
+                            <img src="cards/4S.png">
+                        </td>
+                        <td v-if="board[60] !== 0 && pickedCard !== '4S'">
+                            <img src="cards/4S.png">
+                            <img class="chip" v-bind:src="chips[board[60]-1]">
+                        </td>
+                        <td v-if="board[60] === 0 && pickedCard !== '4S'">
+                            <img src="cards/4S.png">
+                        </td>
+
+                        <td v-on:click="playCard(61)" class="highlighted" v-if="board[61] === 0 && pickedCard === '3C'">
+                            <img src="cards/3C.png">
+                        </td>
+                        <td v-if="board[61] !== 0 && pickedCard !== '3C'">
+                            <img src="cards/3C.png">
+                            <img class="chip" v-bind:src="chips[board[61]-1]">
+                        </td>
+                        <td v-if="board[61] === 0 && pickedCard !== '3C'">
+                            <img src="cards/3C.png">
+                        </td>
+
+                        <td v-on:click="playCard(62)" class="highlighted" v-if="board[62] === 0 && pickedCard === '3D'">
+                            <img src="cards/3D.png">
+                        </td>
+                        <td v-if="board[62] !== 0 && pickedCard !== '3D'">
+                            <img src="cards/3D.png">
+                            <img class="chip" v-bind:src="chips[board[62]-1]">
+                        </td>
+                        <td v-if="board[62] === 0 && pickedCard !== '3D'">
+                            <img src="cards/3D.png">
+                        </td>
+
+                        <td v-on:click="playCard(63)" class="highlighted" v-if="board[63] === 0 && pickedCard === '5C'">
+                            <img src="cards/5C.png">
+                        </td>
+                        <td v-if="board[63] !== 0 && pickedCard !== '5C'">
+                            <img src="cards/5C.png">
+                            <img class="chip" v-bind:src="chips[board[63]-1]">
+                        </td>
+                        <td v-if="board[63] === 0 && pickedCard !== '5C'">
+                            <img src="cards/5C.png">
+                        </td>
+
+                        <td v-on:click="playCard(64)" class="highlighted" v-if="board[64] === 0 && pickedCard === '6H'">
+                            <img src="cards/6H.png">
+                        </td>
+                        <td v-if="board[64] !== 0 && pickedCard !== '6H'">
+                            <img src="cards/6H.png">
+                            <img class="chip" v-bind:src="chips[board[64]-1]">
+                        </td>
+                        <td v-if="board[64] === 0 && pickedCard !== '6H'">
+                            <img src="cards/6H.png">
+                        </td>
+
+                        <td v-on:click="playCard(65)" class="highlighted" v-if="board[65] === 0 && pickedCard === '7H'">
+                            <img src="cards/7H.png">
+                        </td>
+                        <td v-if="board[65] !== 0 && pickedCard !== '7H'">
+                            <img src="cards/7H.png">
+                            <img class="chip" v-bind:src="chips[board[65]-1]">
+                        </td>
+                        <td v-if="board[65] === 0 && pickedCard !== '7H'">
+                            <img src="cards/7H.png">
+                        </td>
+
+                        <td v-on:click="playCard(66)" class="highlighted" v-if="board[66] === 0 && pickedCard === '8H'">
+                            <img src="cards/8H.png">
+                        </td>
+                        <td v-if="board[66] !== 0 && pickedCard !== '8H'">
+                            <img src="cards/8H.png">
+                            <img class="chip" v-bind:src="chips[board[66]-1]">
+                        </td>
+                        <td v-if="board[66] === 0 && pickedCard !== '8H'">
+                            <img src="cards/8H.png">
+                        </td>
+
+                        <td v-on:click="playCard(67)" class="highlighted" v-if="board[67] === 0 && pickedCard === 'QC'">
+                            <img src="cards/QC.png">
+                        </td>
+                        <td v-if="board[67] !== 0 && pickedCard !== 'QC'">
+                            <img src="cards/QC.png">
+                            <img class="chip" v-bind:src="chips[board[67]-1]">
+                        </td>
+                        <td v-if="board[67] === 0 && pickedCard !== 'QC'">
+                            <img src="cards/QC.png">
+                        </td>
+
+                        <td v-on:click="playCard(68)" class="highlighted" v-if="board[68] === 0 && pickedCard === '5S'">
+                            <img src="cards/5S.png">
+                        </td>
+                        <td v-if="board[68] !== 0 && pickedCard !== '5S'">
+                            <img src="cards/5S.png">
+                            <img class="chip" v-bind:src="chips[board[68]-1]">
+                        </td>
+                        <td v-if="board[68] === 0 && pickedCard !== '5S'">
+                            <img src="cards/5S.png">
+                        </td>
+
+                        <td v-on:click="playCard(69)" class="highlighted" v-if="board[69] === 0 && pickedCard === 'QD'">
+                            <img src="cards/QD.png">
+                        </td>
+                        <td v-if="board[69] !== 0 && pickedCard !== 'QD'">
+                            <img src="cards/QD.png">
+                            <img class="chip" v-bind:src="chips[board[69]-1]">
+                        </td>
+                        <td v-if="board[69] === 0 && pickedCard !== 'QD'">
+                            <img src="cards/QD.png">
+                        </td>
+
+                    </tr>
+                    <!-----------------------NEW ROW-8------------------->
+                    <tr>
+
+                        <td v-on:click="playCard(70)" class="highlighted" v-if="board[70] === 0 && pickedCard === '3S'">
+                            <img src="cards/3S.png">
+                        </td>
+                        <td v-if="board[70] !== 0 && pickedCard !== '3S'">
+                            <img src="cards/3S.png">
+                            <img class="chip" v-bind:src="chips[board[70]-1]">
+                        </td>
+                        <td v-if="board[70] === 0 && pickedCard !== '3S'">
+                            <img src="cards/3S.png">
+                        </td>
+
+                        <td v-on:click="playCard(71)" class="highlighted" v-if="board[71] === 0 && pickedCard === '4C'">
+                            <img src="cards/4C.png">
+                        </td>
+                        <td v-if="board[71] !== 0 && pickedCard !== '4C'">
+                            <img src="cards/4C.png">
+                            <img class="chip" v-bind:src="chips[board[71]-1]">
+                        </td>
+                        <td v-if="board[71] === 0 && pickedCard !== '4C'">
+                            <img src="cards/4C.png">
+                        </td>
+
+                        <td v-on:click="playCard(72)" class="highlighted" v-if="board[72] === 0 && pickedCard === '2D'">
+                            <img src="cards/2D.png">
+                        </td>
+                        <td v-if="board[72] !== 0 && pickedCard !== '2D'">
+                            <img src="cards/2D.png">
+                            <img class="chip" v-bind:src="chips[board[72]-1]">
+                        </td>
+                        <td v-if="board[72] === 0 && pickedCard !== '2D'">
+                            <img src="cards/2D.png">
+                        </td>
+
+                        <td v-on:click="playCard(73)" class="highlighted" v-if="board[73] === 0 && pickedCard === '6C'">
+                            <img src="cards/6C.png">
+                        </td>
+                        <td v-if="board[73] !== 0 && pickedCard !== '6C'">
+                            <img src="cards/6C.png">
+                            <img class="chip" v-bind:src="chips[board[73]-1]">
+                        </td>
+                        <td v-if="board[73] === 0 && pickedCard !== '6C'">
+                            <img src="cards/6C.png">
+                        </td>
+
+                        <td v-on:click="playCard(74)" class="highlighted" v-if="board[74] === 0 && pickedCard === '7C'">
+                            <img src="cards/7C.png">
+                        </td>
+                        <td v-if="board[74] !== 0 && pickedCard !== '7C'">
+                            <img src="cards/7C.png">
+                            <img class="chip" v-bind:src="chips[board[74]-1]">
+                        </td>
+                        <td v-if="board[74] === 0 && pickedCard !== '7C'">
+                            <img src="cards/7C.png">
+                        </td>
+
+                        <td v-on:click="playCard(75)" class="highlighted" v-if="board[75] === 0 && pickedCard === '8C'">
+                            <img src="cards/8C.png">
+                        </td>
+                        <td v-if="board[75] !== 0 && pickedCard !== '8C'">
+                            <img src="cards/8C.png">
+                            <img class="chip" v-bind:src="chips[board[75]-1]">
+                        </td>
+                        <td v-if="board[75] === 0 && pickedCard !== '8C'">
+                            <img src="cards/8C.png">
+                        </td>
+
+                        <td v-on:click="playCard(76)" class="highlighted" v-if="board[76] === 0 && pickedCard === '9C'">
+                            <img src="cards/9C.png">
+                        </td>
+                        <td v-if="board[76] !== 0 && pickedCard !== '9C'">
+                            <img src="cards/9C.png">
+                            <img class="chip" v-bind:src="chips[board[76]-1]">
+                        </td>
+                        <td v-if="board[76] === 0 && pickedCard !== '9C'">
+                            <img src="cards/9C.png">
+                        </td>
+
+                        <td v-on:click="playCard(77)" class="highlighted" v-if="board[77] === 0 && pickedCard === '10C'">
+                            <img src="cards/10C.png">
+                        </td>
+                        <td v-if="board[77] !== 0 && pickedCard !== '10C'">
+                            <img src="cards/10C.png">
+                            <img class="chip" v-bind:src="chips[board[77]-1]">
+                        </td>
+                        <td v-if="board[77] === 0 && pickedCard !== '10C'">
+                            <img src="cards/10C.png">
+                        </td>
+
+                        <td v-on:click="playCard(78)" class="highlighted" v-if="board[78] === 0 && pickedCard === '6S'">
+                            <img src="cards/6S.png">
+                        </td>
+                        <td v-if="board[78] !== 0 && pickedCard !== '6S'">
+                            <img src="cards/6S.png">
+                            <img class="chip" v-bind:src="chips[board[78]-1]">
+                        </td>
+                        <td v-if="board[78] === 0 && pickedCard !== '6S'">
+                            <img src="cards/6S.png">
+                        </td>
+
+                        <td v-on:click="playCard(79)" class="highlighted" v-if="board[79] === 0 && pickedCard === 'KD'">
+                            <img src="cards/KD.png">
+                        </td>
+                        <td v-if="board[79] !== 0 && pickedCard !== 'KD'">
+                            <img src="cards/KD.png">
+                            <img class="chip" v-bind:src="chips[board[79]-1]">
+                        </td>
+                        <td v-if="board[79] === 0 && pickedCard !== 'KD'">
+                            <img src="cards/KD.png">
+                        </td>
+                    </tr>
+                    <!-----------------------NEW ROW-9------------------->
+                    <tr>
+
+                        <td v-on:click="playCard(80)" class="highlighted" v-if="board[80] === 0 && pickedCard === '2S'">
+                            <img src="cards/2S.png">
+                        </td>
+                        <td v-if="board[80] !== 0 && pickedCard !== '2S'">
+                            <img src="cards/2S.png">
+                            <img class="chip" v-bind:src="chips[board[80]-1]">
+                        </td>
+                        <td v-if="board[80] === 0 && pickedCard !== '2S'">
+                            <img src="cards/2S.png">
+                        </td>
+
+                        <td v-on:click="playCard(81)" class="highlighted" v-if="board[81] === 0 && pickedCard === '5C'">
+                            <img src="cards/5C.png">
+                        </td>
+                        <td v-if="board[81] !== 0 && pickedCard !== '5C'">
+                            <img src="cards/5C.png">
+                            <img class="chip" v-bind:src="chips[board[81]-1]">
+                        </td>
+                        <td v-if="board[81] === 0 && pickedCard !== '5C'">
+                            <img src="cards/5C.png">
+                        </td>
+
+                        <td v-on:click="playCard(82)" class="highlighted" v-if="board[82] === 0 && pickedCard === 'AS'">
+                            <img src="cards/AS.png">
+                        </td>
+                        <td v-if="board[82] !== 0 && pickedCard !== 'AS'">
+                            <img src="cards/AS.png">
+                            <img class="chip" v-bind:src="chips[board[82]-1]">
+                        </td>
+                        <td v-if="board[82] === 0 && pickedCard !== 'AS'">
+                            <img src="cards/AS.png">
+                        </td>
+
+                        <td v-on:click="playCard(83)" class="highlighted" v-if="board[83] === 0 && pickedCard === 'KS'">
+                            <img src="cards/KS.png">
+                        </td>
+                        <td v-if="board[83] !== 0 && pickedCard !== 'KS'">
+                            <img src="cards/KS.png">
+                            <img class="chip" v-bind:src="chips[board[83]-1]">
+                        </td>
+                        <td v-if="board[83] === 0 && pickedCard !== 'KS'">
+                            <img src="cards/KS.png">
+                        </td>
+
+                        <td v-on:click="playCard(84)" class="highlighted" v-if="board[84] === 0 && pickedCard === 'QS'">
+                            <img src="cards/QS.png">
+                        </td>
+                        <td v-if="board[84] !== 0 && pickedCard !== 'QS'">
+                            <img src="cards/QS.png">
+                            <img class="chip" v-bind:src="chips[board[84]-1]">
+                        </td>
+                        <td v-if="board[84] === 0 && pickedCard !== 'QS'">
+                            <img src="cards/QS.png">
+                        </td>
+
+                        <td v-on:click="playCard(85)" class="highlighted" v-if="board[85] === 0 && pickedCard === '10S'">
+                            <img src="cards/10S.png">
+                        </td>
+                        <td v-if="board[85] !== 0 && pickedCard !== '10S'">
+                            <img src="cards/10S.png">
+                            <img class="chip" v-bind:src="chips[board[85]-1]">
+                        </td>
+                        <td v-if="board[85] === 0 && pickedCard !== '10S'">
+                            <img src="cards/10S.png">
+                        </td>
+
+                        <td v-on:click="playCard(86)" class="highlighted" v-if="board[86] === 0 && pickedCard === '9S'">
+                            <img src="cards/9S.png">
+                        </td>
+                        <td v-if="board[86] !== 0 && pickedCard !== '9S'">
+                            <img src="cards/9S.png">
+                            <img class="chip" v-bind:src="chips[board[86]-1]">
+                        </td>
+                        <td v-if="board[86] === 0 && pickedCard !== '9S'">
+                            <img src="cards/9S.png">
+                        </td>
+
+                        <td v-on:click="playCard(87)" class="highlighted" v-if="board[87] === 0 && pickedCard === '8S'">
+                            <img src="cards/8S.png">
+                        </td>
+                        <td v-if="board[87] !== 0 && pickedCard !== '8S'">
+                            <img src="cards/8S.png">
+                            <img class="chip" v-bind:src="chips[board[87]-1]">
+                        </td>
+                        <td v-if="board[87] === 0 && pickedCard !== '8S'">
+                            <img src="cards/8S.png">
+                        </td>
+
+                        <td v-on:click="playCard(88)" class="highlighted" v-if="board[88] === 0 && pickedCard === '7S'">
+                            <img src="cards/7S.png">
+                        </td>
+                        <td v-if="board[88] !== 0 && pickedCard !== '7S'">
+                            <img src="cards/7S.png">
+                            <img class="chip" v-bind:src="chips[board[88]-1]">
+                        </td>
+                        <td v-if="board[88] === 0 && pickedCard !== '7S'">
+                            <img src="cards/7S.png">
+                        </td>
+
+                        <td v-on:click="playCard(89)" class="highlighted" v-if="board[89] === 0 && pickedCard === 'AD'">
+                            <img src="cards/AD.png">
+                        </td>
+                        <td v-if="board[89] !== 0 && pickedCard !== 'AD'">
+                            <img src="cards/AD.png">
+                            <img class="chip" v-bind:src="chips[board[89]-1]">
+                        </td>
+                        <td v-if="board[89] === 0 && pickedCard !== 'AD'">
+                            <img src="cards/AD.png">
+                        </td>
+                    </tr>
+                    <!-----------------------NEW ROW-10------------------->
+                    <tr>
+
+                        <td>
+                            <img src="cards/gray_back.png">
+                        </td>
+
+                        <td v-on:click="playCard(91)" class="highlighted" v-if="board[91] === 0 && pickedCard === '6C'">
+                            <img src="cards/6C.png">
+                        </td>
+                        <td v-if="board[91] !== 0 && pickedCard !== '6C'">
+                            <img src="cards/6C.png">
+                            <img class="chip" v-bind:src="chips[board[91]-1]">
+                        </td>
+                        <td v-if="board[91] === 0 && pickedCard !== '6C'">
+                            <img src="cards/6C.png">
+                        </td>
+
+                        <td v-on:click="playCard(92)" class="highlighted" v-if="board[92] === 0 && pickedCard === '7C'">
+                            <img src="cards/7C.png">
+                        </td>
+                        <td v-if="board[92] !== 0 && pickedCard !== '7C'">
+                            <img src="cards/7C.png">
+                            <img class="chip" v-bind:src="chips[board[92]-1]">
+                        </td>
+                        <td v-if="board[92] === 0 && pickedCard !== '7C'">
+                            <img src="cards/7C.png">
+                        </td>
+
+                        <td v-on:click="playCard(93)" class="highlighted" v-if="board[93] === 0 && pickedCard === '8C'">
+                            <img src="cards/8C.png">
+                        </td>
+                        <td v-if="board[93] !== 0 && pickedCard !== '8C'">
+                            <img src="cards/8C.png">
+                            <img class="chip" v-bind:src="chips[board[93]-1]">
+                        </td>
+                        <td v-if="board[93] === 0 && pickedCard !== '8C'">
+                            <img src="cards/8C.png">
+                        </td>
+
+                        <td v-on:click="playCard(94)" class="highlighted" v-if="board[94] === 0 && pickedCard === '9C'">
+                            <img src="cards/9C.png">
+                        </td>
+                        <td v-if="board[94] !== 0 && pickedCard !== '9C'">
+                            <img src="cards/9C.png">
+                            <img class="chip" v-bind:src="chips[board[94]-1]">
+                        </td>
+                        <td v-if="board[94] === 0 && pickedCard !== '9C'">
+                            <img src="cards/9C.png">
+                        </td>
+
+                        <td v-on:click="playCard(95)" class="highlighted" v-if="board[95] === 0 && pickedCard === '10C'">
+                            <img src="cards/10C.png">
+                        </td>
+                        <td v-if="board[95] !== 0 && pickedCard !== '10C'">
+                            <img src="cards/10C.png">
+                            <img class="chip" v-bind:src="chips[board[95]-1]">
+                        </td>
+                        <td v-if="board[95] === 0 && pickedCard !== '10C'">
+                            <img src="cards/10C.png">
+                        </td>
+
+                        <td v-on:click="playCard(96)" class="highlighted" v-if="board[96] === 0 && pickedCard === 'QC'">
+                            <img src="cards/QC.png">
+                        </td>
+                        <td v-if="board[96] !== 0 && pickedCard !== 'QC'">
+                            <img src="cards/QC.png">
+                            <img class="chip" v-bind:src="chips[board[96]-1]">
+                        </td>
+                        <td v-if="board[96] === 0 && pickedCard !== 'QC'">
+                            <img src="cards/QC.png">
+                        </td>
+
+                        <td v-on:click="playCard(97)" class="highlighted" v-if="board[97] === 0 && pickedCard === 'KC'">
+                            <img src="cards/KC.png">
+                        </td>
+                        <td v-if="board[97] !== 0 && pickedCard !== 'KC'">
+                            <img src="cards/KC.png">
+                            <img class="chip" v-bind:src="chips[board[97]-1]">
+                        </td>
+                        <td v-if="board[97] === 0 && pickedCard !== 'KC'">
+                            <img src="cards/KC.png">
+                        </td>
+
+                        <td v-on:click="playCard(98)" class="highlighted" v-if="board[98] === 0 && pickedCard === 'AC'">
+                            <img src="cards/AC.png">
+                        </td>
+                        <td v-if="board[98] !== 0 && pickedCard !== 'AC'">
+                            <img src="cards/AC.png">
+                            <img class="chip" v-bind:src="chips[board[98]-1]">
+                        </td>
+                        <td v-if="board[98] === 0 && pickedCard !== 'AC'">
+                            <img src="cards/AC.png">
+                        </td>
+                        <td>
+                            <img src="cards/gray_back.png">
+                        </td>
+                    </tr>
+                </table>
+                <div class="footer">
+                    <button class="btn btn-light quit">Back to menu</button>
+                    <p v-if="order[playerUp].name !== player.name" class="playerUp">{{order[playerUp].name}}'s up!</p>
+                    <p v-else class="playerUp">You're up!</p>
+                    <p class="version">Version 1.0.0</p>
+                    <button class="btn btn-light restart">Restart</button>
+                    <ul v-if="order[playerUp].name !== player.name">
+                        <li id="zero"><img v-bind:src="'cardsUp/' + player.hand[0] + '.png'"></li>
+                        <li id="one"><img v-bind:src="'cardsUp/' + player.hand[1] + '.png'"></li>
+                        <li id="two"><img v-bind:src="'cardsUp/' + player.hand[2] + '.png'"></li>
+                        <li id="three"><img v-bind:src="'cardsUp/' + player.hand[3] + '.png'"></li>
+                        <li id="four"><img v-bind:src="'cardsUp/' + player.hand[4] + '.png'"></li>
+                    </ul>
+                    <ul v-if="order[playerUp].name === player.name">
+                        <li v-on:click="pickCard(0)" id="zero"><img v-bind:src="'cardsUp/' + player.hand[0] + '.png'"></li>
+                        <li v-on:click="pickCard(1)" id="one"><img v-bind:src="'cardsUp/' + player.hand[1] + '.png'"></li>
+                        <li v-on:click="pickCard(2)" id="two"><img v-bind:src="'cardsUp/' + player.hand[2] + '.png'"></li>
+                        <li v-on:click="pickCard(3)" id="three"><img v-bind:src="'cardsUp/' + player.hand[3] + '.png'"></li>
+                        <li v-on:click="pickCard(4)" id="four"><img v-bind:src="'cardsUp/' + player.hand[4] + '.png'"></li>
+                    </ul>
+                </div>
+                <div class="break" style="height: 180px;"></div>
+            </div>
+        </div>
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+        <script src="js/script.js"></script>
+    </body>
+
+</html>

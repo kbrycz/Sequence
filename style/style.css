@@ -1,0 +1,193 @@
+/* -------------------ALL PAGES STYLING------------------ */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Helvetica, sans-serif;
+    letter-spacing: 6px;
+    min-width: 1000px;
+  }
+
+
+/* -------------------HOME SCREEN STYLING------------------ */
+
+h1 {
+    letter-spacing: 8px;
+    font-size: 70px;
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+.buttonBlock {
+    text-align: center;
+}
+.buttonBlock button {
+    width: 230px;
+    background-color: #f4f0f8;
+    border: none;
+    color: #292929;
+    padding: 12px 24px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    margin: 15px 2px;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+.login-view h5 {
+    font-size: 18px;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+.joinText {
+    height: 40px;
+    letter-spacing: 6px;
+    margin-right: 15px;
+    padding: 5px;
+}
+.joinDiv {
+    margin-top: 40px;
+}
+
+/* ------------------WAITING SCREEN------------------ */
+
+.playerRow {
+    width: 100%;
+    height: auto;
+    padding: 12px;
+    padding-left: 30px;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+.playerRow:first-child {
+    border-top: 0px solid #9e7bc300;
+}
+.playerRowStart {
+    width: 80%;
+    height: 80%;
+    margin: auto;
+    border: 1px solid #292929;
+    margin-top: 10px;
+}
+.playerRow h4 {
+    font-size: 18px;
+}
+
+.blue {
+    background-color: #085add;
+    color: #fff;
+}
+.green {
+    background-color: #02b446;
+    color: #fff;
+}
+.red {
+    background-color: #ca0000;
+    color: #fff;
+}
+
+.startGame {
+    margin-top: 50px;
+    text-align: center;
+}
+
+/* ------------------Game SCREEN------------------ */
+
+td {
+    border: 3px solid #292929;
+}
+table {
+    border: 6px solid #292929;
+    margin: auto;
+    margin-top: 5px;
+    width: 90vw;
+    border-collapse: collapse;
+    min-width: 1200px;
+}
+.highlighted {
+    background-color: #ffe600;
+}
+td {
+    width: 90px;
+    position: relative;
+}
+
+td img {
+    padding: 2px;
+    display: block; 
+    width : 100%;
+}
+
+/*-----------------------GAMEPLAY---------------------*/
+.chip {
+    position: absolute;
+    top: 2%;
+    left: 22%;
+    z-index: 1;
+    width: 65px;
+}
+
+/*-----------------------FOOTER----------------------*/
+
+.footer {
+    z-index: 5;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 150px;
+    background-color: #141414;
+    color: white;
+    min-width: 1200px;
+}
+
+ul {
+    z-index: 6;
+    margin-top: 20px;
+    text-align: center;
+}
+
+ul li {
+    z-index: 6;
+    display:inline;
+    margin: 10px;
+}
+.footer img {
+    z-index: 6;
+    width: 80px;
+}
+
+.quit {
+    z-index: 6;
+    position: absolute;
+    top: 25px;
+    left: 25px;
+}
+
+.version {
+    z-index: 6;
+    position: absolute;
+    bottom: 10px;
+    right: 25px;
+    letter-spacing: 4px
+}
+
+.playerUp {
+    z-index: 6;
+    position: absolute;
+    bottom: 10px;
+    left: 25px;
+    letter-spacing: 4px;
+    color: #fff;
+    font-size: 18px;
+}
+
+.restart {
+    z-index: 6;
+    position: absolute;
+    top: 25px;
+    right: 25px;
+}
+
