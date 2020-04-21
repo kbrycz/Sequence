@@ -56,7 +56,7 @@ mounted: function () {
         app.users = obj.users;
     })
     socket.on('join', function (user) {
-        console.log('pushing to users')
+        console.log('pushing to users');
         app.users.push(user);
         app.usersInLobby.push(user);
     })
@@ -100,13 +100,23 @@ mounted: function () {
         // get order of players
         orderTemp = [];
         if (obj.isThree) {
+            if (obj.threeOnes) {
+                orderTemp.push(obj.team1.shift())
+                orderTemp.push(obj.team2.shift())
+                orderTemp.push(obj.team3.shift())
+            } else {
+                orderTemp.push(obj.team1.shift())
+                orderTemp.push(obj.team2.shift())
+                orderTemp.push(obj.team3.shift())
+                orderTemp.push(obj.team1.shift())
+                orderTemp.push(obj.team2.shift())
+                orderTemp.push(obj.team3.shift())
+            }
+        } else if (obj.isOne) {
             orderTemp.push(obj.team1.shift())
             orderTemp.push(obj.team2.shift())
-            orderTemp.push(obj.team3.shift())
-            orderTemp.push(obj.team1.shift())
-            orderTemp.push(obj.team2.shift())
-            orderTemp.push(obj.team3.shift())
-        } else {
+        }
+        else {
             orderTemp.push(obj.team1.shift())
             orderTemp.push(obj.team2.shift())
             orderTemp.push(obj.team1.shift())
@@ -190,11 +200,16 @@ methods: {
         socket.emit('changeTeam', obj);
     },
     startGame() {
+        if (this.users.length > 6) {
+            alert("Cannot have more than 6 people in a game.")
+            return;
+        }
         let team1 = []
         let team2 = []
         let team3 = []
         let isThree = true;
         let missingColor = 0;
+        let isOne = false;
         for (let i = 0; i < this.users.length; ++i) {
             if (this.users[i].team === 1) {
                 team1.push(this.users[i]);
@@ -216,6 +231,13 @@ methods: {
             isThree = false;
             missingColor = 1;
             vacants += 1
+            if (team2.length === 1 && team3.length === 1) {
+                isOne = true;
+            }
+            if (team2.length !== team3.length) {
+                alert("You must have even teams to start.");
+                return;
+            }
             obj = {
                 'roomName': this.roomName,
                 'team1': team2,
@@ -223,12 +245,20 @@ methods: {
                 'isThree': false,
                 'team1Color': 2,
                 'team2Color': 3,
+                'isOne': isOne,
             }
         }
         if (team2.length === 0) {
             isThree = false;
             missingColor = 2;
             vacants += 1
+            if (team1.length === 1 && team3.length === 1) {
+                isOne = true;
+            }
+            if (team1.length !== team3.length) {
+                alert("You must have even teams to start.");
+                return;
+            }
             obj = {
                 'roomName': this.roomName,
                 'team1': team1,
@@ -236,12 +266,20 @@ methods: {
                 'isThree': false,
                 'team1Color': 1,
                 'team2Color': 3,
+                'isOne': isOne,
             }
         }
         if (team3.length === 0) {
             isThree = false;
             missingColor = 3;
             vacants += 1
+            if (team1.length === 1 && team2.length === 1) {
+                isOne = true;
+            }
+            if (team1.length !== team2.length) {
+                alert("You must have even teams to start.");
+                return;
+            }
             obj = {
                 'roomName': this.roomName,
                 'team1': team1,
@@ -249,6 +287,7 @@ methods: {
                 'isThree': false,
                 'team1Color': 1,
                 'team2Color': 2,
+                'isOne': isOne,
             }
         }
         if (vacants > 1) {
@@ -256,6 +295,14 @@ methods: {
             return;
         }
         if (isThree) {
+            if (team1.length !== team2.length || team1.length !== team3.length || team2.length !== team3.length) {
+                alert("You must have even teams to start.");
+                return;
+            }
+            let threeOnes = false;
+            if (team1.length === 1) {
+                threeOnes = true;
+            }
             obj = {
                 'roomName': this.roomName,
                 'team1': team1,
@@ -264,7 +311,9 @@ methods: {
                 'isThree': true,
                 'team1Color': 1,
                 'team2Color': 2,
-                'team3Color': 3
+                'team3Color': 3,
+                'isOne': isOne,
+                'threeOnes': threeOnes,
             }
         }
         console.log("Sending game info to server")
@@ -272,7 +321,7 @@ methods: {
     },
     pickCard(card) {
         this.oneEyed = false;
-        this.twoEyed = true;
+        this.twoEyed = false;
         card = parseInt(card);
         console.log("User looking at playing card " + card);
         this.pickedCard = this.player.hand[card];
@@ -280,7 +329,7 @@ methods: {
 
         if (this.pickedCard === 'JD' || this.pickedCard === 'JC') {
             this.twoEyed = true;
-        } else if (this.pickedCard === 'JS' || this.pickedCard === 'JD') {
+        } else if (this.pickedCard === 'JS' || this.pickedCard === 'JH') {
             this.oneEyed = true;
         }
     },
