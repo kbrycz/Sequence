@@ -2704,7 +2704,7 @@
                     <button v-on:click="leaveRoom" class="btn btn-light quit">Back to menu</button>
                     <p v-if="order[playerUp].id !== player.id" class="playerUp">{{order[playerUp].name}}'s up!</p>
                     <p v-else class="playerUp">You're up!</p>
-                    <p class="version">Version 1.0.0</p>
+                    <p class="version">Version 1.0.2</p>
                     <button v-if="isHost" v-on:click="restartGame" class="btn btn-light restart">Restart</button>
                     <ul v-if="order[playerUp].name !== player.name">
                         <li id="zero"><img v-bind:src="'cardsUp/' + player.hand[0] + '.png'"></li>
