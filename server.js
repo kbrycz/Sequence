@@ -104,6 +104,40 @@ io.on('connection', (socket) => {
         });
         idNumber += 1
     })
+    socket.on('disconnect', (reason) => {
+        console.log('User has disconnected');
+        console.log(reason);
+        console.log(socket.id)
+        if (socket.id in hosts) {
+            console.log('host has disconnected');
+            io.in(hosts[socket.id]).emit('hostDisconnected');
+            var index = rooms.indexOf(hosts[socket.id]);
+            if (index !== -1) {
+                rooms.splice(index, 1);
+            }
+            delete hosts[socket.id];
+        } else {
+            io.emit('leaveRoom', socket.id);
+        }
+    })
+    socket.on('everyoneLeave', (room) => {
+        console.log("exiting room");
+        socket.leave(room);
+        if (socket.id in hosts) {
+            console.log('host has disconnected');
+            io.in(hosts[socket.id]).emit('hostDisconnected');
+            var index = rooms.indexOf(hosts[socket.id]);
+            if (index !== -1) {
+                rooms.splice(index, 1);
+            }
+            delete hosts[socket.id];
+        }
+    })
+
+    socket.on('restartGame', (room) => {
+        console.log("Restarting game");
+        io.in(obj.room).emit('restartGame');
+    })
 
     // -------------------Game creating socket functions----------------------------
 

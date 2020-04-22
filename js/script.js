@@ -12,8 +12,10 @@ data: {
     users: [],
     usersInLobby: [],
     player: {},
+    previousStarter: 0,
 
     gameData: {},
+    gameStarted: false,
     deck: [],
     board: [],
     playerUp: 0,
@@ -34,6 +36,8 @@ mounted: function () {
 
     socket.on('createRoom', function (obj) {
         console.log('Created room: ' + obj.room);
+        app.users = [],
+        app.usersInLobby = []
         app.isHost = true;
         app.hostSocketId = socket.id;
         app.roomName = obj.room;
@@ -49,11 +53,36 @@ mounted: function () {
             app.state = 3;
         }
     })
+    socket.on('hostDisconnected', function () {
+        alert("Host has disconnected. Returning to main menu.")
+        app.state = 0;
+        socket.emit('everyoneLeave', app.roomName);
+    })
+    socket.on('leaveRoom', function (id) {
+        console.log("User has left the room");
+        let indexToLeave = -1;
+        for (let i = 0; i < app.users.length; ++i) {
+            if (app.users[i].socketid === id) {
+                indexToLeave = i;
+            }
+        }
+        if (indexToLeave !== -1) {
+            app.users.splice(indexToLeave, 1);
+            app.updateInformation();
+            if (app.gameStarted) {
+                socket.emit('everyoneLeave', app.roomName);
+                app.state = 0;
+                alert("Someone has left your game. Returning to main menu.")
+            }
+        }
+    })
+
     socket.on('updateInformation', function (obj) {
         app.roomName = obj.roomName;
         app.hostSocketId = obj.hostSocketId;
         app.usersInLobby = obj.usersInLobby;
         app.users = obj.users;
+
     })
     socket.on('join', function (user) {
         console.log('pushing to users');
@@ -77,8 +106,11 @@ mounted: function () {
     })
     socket.on('startGame', function (obj) {
         console.log("Starting Game")
+        app.gameStarted = true;
+        app.player.hand = []
         console.log(obj)
         for (let i = 0; i < app.users.length; ++i) {
+            app.users[i].hand = []
             for (let j = 0; j < 5; ++j) {
                 app.users[i].hand.push(obj.deck.shift())
             }
@@ -93,6 +125,7 @@ mounted: function () {
         console.log(app.player);
 
         // Create board array 
+        app.board = []
         for (let i = 0; i < 100; ++i) {
             app.board.push(0);
         }
@@ -136,6 +169,14 @@ mounted: function () {
         app.twoEyed = false;
         console.log(app.playerUp)
         console.log(app.order.length);
+        if (app.playerUp >= app.order.length - 1) {
+            app.playerUp = 0;
+        } else {
+            app.playerUp += 1;
+        }
+    })
+    socket.on('restartGame', function () {
+        console.log("Updating the starting player.")
         if (app.playerUp >= app.order.length - 1) {
             app.playerUp = 0;
         } else {
@@ -357,6 +398,15 @@ methods: {
             'board': this.board,
         }
         socket.emit('playCard', obj);
+    },
+    restartGame() {
+        console.log("Host wants to restart game.")
+        if (confirm("Restart the game?")) {
+            this.startGame();
+            socket.emit('restartGame', this.roomName);
+        } else {
+            return;
+        }
     }
 }
 })

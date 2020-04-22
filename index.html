@@ -2686,7 +2686,7 @@
                     <p v-if="order[playerUp].name !== player.name" class="playerUp">{{order[playerUp].name}}'s up!</p>
                     <p v-else class="playerUp">You're up!</p>
                     <p class="version">Version 1.0.0</p>
-                    <button class="btn btn-light restart">Restart</button>
+                    <button v-if="isHost" v-on:click="restartGame" class="btn btn-light restart">Restart</button>
                     <ul v-if="order[playerUp].name !== player.name">
                         <li id="zero"><img v-bind:src="'cardsUp/' + player.hand[0] + '.png'"></li>
                         <li id="one"><img v-bind:src="'cardsUp/' + player.hand[1] + '.png'"></li>
