@@ -5,11 +5,11 @@ body {
     font-family: 'Raleway', sans-serif;
     letter-spacing: 6px;
     min-width: 1000px;
+    background-color: rgb(223, 223, 223);
   }
 
 
 /* -------------------HOME SCREEN STYLING------------------ */
-
 
 
 h1 {
@@ -83,7 +83,7 @@ h2 {
     width: 80%;
     height: 80%;
     margin: auto;
-    border: 1px solid #dfd9d9;
+    border: 1px solid #b7b7b7;
     border-radius: 10px;
     margin-top: 10px;
 }

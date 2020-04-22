@@ -14,11 +14,11 @@
                 <div class="container">
                     <h1>Sequence Online</h1>
                     <div class="login-view">
-                        <div class="buttonBlock">
-                            <button class="btn btn-dark" v-on:click="createRoom">Create Room</button>
+                        <div class="buttonBlock container">
+                            <button type="button" class="btn btn-dark" v-on:click="createRoom">Create Room</button>
                         </div>
                         <div class="buttonBlock">
-                            <button class="btn btn-dark" v-on:click="state=2">Join Room</button>
+                            <button type="button" class="btn btn-dark" v-on:click="state=2">Join Room</button>
                         </div>
                         <div class="buttonBlock">
                             <img src="cardsUp/honors_spade-14.png">
@@ -36,7 +36,7 @@
                             <h5>{{roomName}}</h5>
                         </div>
                         <div class="buttonBlock">
-                            <button class="btn btn-dark" v-on:click="state = 3">Continue</button>
+                            <button type="button" class="btn btn-dark" v-on:click="state = 3">Continue</button>
                         </div>
                         <div class="buttonBlock">
                             <img src="cardsUp/honors_spade-14.png">
@@ -97,7 +97,7 @@
                                     <h4>{{user.name}}</h4>
                                 </div>
                                 <div class="col-6" v-if="user.socketid == player.socketid">
-                                    <button class="btn btn-dark" v-on:click="changeTeam">Change Team</button>
+                                    <button type="button" class="btn btn-dark" v-on:click="changeTeam">Change Team</button>
                                 </div>
                             </div>
                         </div>
@@ -134,7 +134,7 @@
                     </div>
                     <div v-if="isHost" class="container">
                         <div class="startGame">
-                            <button class="btn btn-primary" v-on:click="startGame">Start Game</button>
+                            <button class="btn btn-dark" v-on:click="startGame">Start Game</button>
                         </div>
                     </div>
                     <div v-else class="container">
