@@ -5,11 +5,25 @@ body {
     font-family: 'Raleway', sans-serif;
     letter-spacing: 6px;
     min-width: 1000px;
-    background-color: rgb(223, 223, 223);
+    background-color: rgb(255, 255, 255);
+    color: #292b2c;
   }
 
 
 /* -------------------HOME SCREEN STYLING------------------ */
+
+.login-view .btn-dark { 
+    background: #292b2c;
+    color: rgb(243, 243, 243);
+  }
+  
+  .login-view .btn-dark a {
+    color: #fafafa;
+  }
+  
+  .login-view .btn-dark:hover { 
+    background: #191a1a;
+  }
 
 
 h1 {
