@@ -58,6 +58,7 @@ mounted: function () {
         app.state = 0;
         socket.emit('everyoneLeave', app.roomName);
     })
+
     socket.on('leaveRoom', function (id) {
         console.log("User has left the room");
         let indexToLeave = -1;
@@ -169,6 +170,7 @@ mounted: function () {
         app.twoEyed = false;
         console.log(app.playerUp)
         console.log(app.order.length);
+        console.log(app.order)
         if (app.playerUp >= app.order.length - 1) {
             app.playerUp = 0;
         } else {
@@ -177,10 +179,12 @@ mounted: function () {
     })
     socket.on('restartGame', function () {
         console.log("Updating the starting player.")
-        if (app.playerUp >= app.order.length - 1) {
-            app.playerUp = 0;
+        if (app.previousStarter >= app.order.length - 1) {
+            app.previousStarter = 0;
+            app.playerUp = app.previousStarter;
         } else {
-            app.playerUp += 1;
+            app.previousStarter += 1;
+            app.playerUp = app.previousStarter;
         }
     })
 
@@ -407,6 +411,18 @@ methods: {
         } else {
             return;
         }
-    }
+    },
+    leaveRoom() {
+        console.log("Leaving the room.");
+        if (confirm("Leave the room? Everyone will be forced to leave.")) {
+            let obj = {
+                'room': this.roomName,
+                'isHost': this.isHost,
+                'socketid': socket.id
+            }
+            app.state = 0;
+            socket.emit('leaveRoom', obj);
+        }
+    },
 }
 })

@@ -134,10 +134,20 @@ io.on('connection', (socket) => {
         }
     })
 
+    socket.on('leaveRoom', (obj) => {
+        socket.leave(obj.room);
+        if (obj.isHost) {
+            io.in(obj.room).emit('hostDisconnected');
+        } else {
+            io.in(obj.room).emit('leaveRoom', obj.socketid);
+        }
+    })
+
     socket.on('restartGame', (room) => {
         console.log("Restarting game");
-        io.in(obj.room).emit('restartGame');
+        io.in(room).emit('restartGame');
     })
+
 
     // -------------------Game creating socket functions----------------------------
 
@@ -161,6 +171,7 @@ io.on('connection', (socket) => {
     socket.on('playCard', (obj) => {
         io.in(obj.roomName).emit('playCard', obj);
     })
+
 
 })
 
