@@ -1,3 +1,4 @@
-# Sequence
-Online Version of the board game Sequence.
-Created with Vuejs, Nodejs, Express
+# Sequence Online
+- Online Version of the board game Sequence.<br />
+- Created with Vuejs, Nodejs, Express<br />
+- Published version: sequenceonline.tech
