@@ -29,7 +29,7 @@ data: {
 // -----------------------------------------------------------APPLICATION OPENING FUNCTIONS---------------------------------------------------------------------
 created: function () {
     // Current server that we are connecting to
-    socket = io();
+    socket = io('ws://localhost:8080');
 },
 // -----------------------------------------------------------SOCKET LISTENER FUNCTIONS---------------------------------------------------------------------
 mounted: function () {
