@@ -29,7 +29,7 @@ data: {
 // -----------------------------------------------------------APPLICATION OPENING FUNCTIONS---------------------------------------------------------------------
 created: function () {
     // Current server that we are connecting to
-    socket = io('ws://sequenceonline.tech:8080');
+    socket = io();
 },
 // -----------------------------------------------------------SOCKET LISTENER FUNCTIONS---------------------------------------------------------------------
 mounted: function () {
