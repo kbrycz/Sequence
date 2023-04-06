@@ -28,7 +28,3 @@ We welcome contributions from anyone who is interested in improving the game. If
 ## Support
 
 If you have any issues with the game or need technical support, please contact us at support@sequenceonline.com.
-
-## License
-
-Sequence is licensed under the MIT License. See LICENSE for more information.
